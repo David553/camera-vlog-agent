@@ -63,6 +63,12 @@ export interface CloudCall {
 	endpoint: string;
 	imagesUploaded: string[];
 	note: string;
+	role?: string;
+	tokensIn?: number;
+	tokensOut?: number;
+	latencyMs?: number;
+	attempt?: number;
+	cacheHit?: boolean;
 }
 
 export async function logCloudCall(call: CloudCall): Promise<void> {

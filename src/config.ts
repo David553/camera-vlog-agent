@@ -6,6 +6,7 @@ export const FFMPEG = process.env.FFMPEG_PATH || "ffmpeg";
 export const GO2RTC = process.env.GO2RTC_PATH || "go2rtc";
 export const GO2RTC_CONFIG = process.env.GO2RTC_CONFIG || path.join(ROOT, "go2rtc.yaml");
 export const PYTHON_PACKAGES = process.env.PYTHON_PACKAGES || "";
+export const PYTHON = process.env.PYTHON || (process.platform === "win32" ? "python" : "python3");
 export const GO2RTC_API = "http://127.0.0.1:1984";
 export const SUB_STREAM = "rtsp://127.0.0.1:8554/tplink_sub";
 

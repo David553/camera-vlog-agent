@@ -21,7 +21,7 @@ RTSP 摄像头 → go2rtc(仅回环) → ffmpeg 分段录制 → OpenCV 运动�
 
 ## 前置条件
 
-- Windows 10/11（`run.cmd` 与中文字体 msyh.ttc 依赖 Windows）
+- Windows 10/11 / macOS / Linux（中文字体按平台自动选：msyh / PingFang / Noto CJK，可用 `FONT_PATH` 覆盖）
 - Node.js ≥ 24（直接运行 .ts，无需构建）
 - Python 3 + `opencv-python`、`numpy`
 - ffmpeg（含 libx264 / drawtext）、[go2rtc](https://github.com/AlexxIT/go2rtc)
@@ -39,10 +39,19 @@ copy .env.example .env        # 填 AGENT_*，VISION_* 可选
 copy go2rtc.example.yaml go2rtc.yaml   # 改成你的摄像头地址/密码，保留 #transport=tcp
 ```
 
+macOS / Linux：
+
+```bash
+brew install ffmpeg go2rtc        # 或自行下载放进 PATH
+pip3 install opencv-python numpy
+cp .env.example .env
+cp go2rtc.example.yaml go2rtc.yaml
+```
+
 ffmpeg / go2rtc 放进 PATH，或在 `.env` 里填 `FFMPEG_PATH` / `GO2RTC_PATH`；
 已有 opencv 的 site-packages 目录可填 `PYTHON_PACKAGES`，否则用系统 python 环境。
 
-双击 `run.cmd`，或：
+双击 `run.cmd`（Windows）或 `./run.sh`（macOS/Linux），或：
 
 ```bash
 node --env-file=.env src/main.ts            # 默认录 60s
@@ -51,6 +60,17 @@ node --env-file=.env src/main.ts --edit-only
 ```
 
 成片在 `vlogs/`，片段与标签在 `clips/` + `index.json`。
+
+## 模型网关（models.yaml）
+
+声明式配置，不含密钥（`${ENV}` 占位符读 `.env`）：
+
+- **providers**：任意 OpenAI 兼容端点（百炼 / DeepSeek / Moonshot / Ollama / vLLM / OpenRouter…），也支持 `anthropic-messages` / `google-generative-ai` 原生协议
+- **roles**：`brain` / `vision` / `judge` 各带候选链，按序自动降级（模态拒收、429/5xx 重试退避后切换）
+- **policy**：`localOnly: true` 时只允许 `local: true` 的 provider（画面一帧不出本机）；`maxConcurrency` 限流；`cache: true` 对相同帧+prompt 哈希缓存，重复打标零上传
+- 每次调用（含失败尝试、缓存命中）写入台账 `logs/cloud-calls.json`，带 role / token / 延迟
+
+不写 models.yaml 时自动从 `AGENT_*` / `VISION_*` 环境变量合成等价配置。
 
 ## agent 决策逻辑
 

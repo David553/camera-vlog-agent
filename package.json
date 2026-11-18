@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file=.env src/main.ts",
-    "check-api": "node --env-file=.env src/check-api.ts"
+    "check-api": "node --env-file=.env src/check-api.ts",
+    "test": "node --test src/gateway.test.ts src/media.test.ts"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "1.5.2",
     "@earendil-works/pi-ai": "1.5.2",
-    "@earendil-works/pi-schema": "1.5.2"
+    "@earendil-works/pi-schema": "1.5.2",
+    "yaml": "^2.9.1"
   }
 }

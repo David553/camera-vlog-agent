@@ -2,7 +2,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { DIRS, FFMPEG, GO2RTC, GO2RTC_API, GO2RTC_CONFIG, PYTHON_PACKAGES, SEGMENT_SECONDS, SUB_STREAM } from "./config.ts";
+import { DIRS, FFMPEG, GO2RTC, GO2RTC_API, GO2RTC_CONFIG, PYTHON, PYTHON_PACKAGES, SEGMENT_SECONDS, SUB_STREAM } from "./config.ts";
 
 function run(exe: string, args: string[], env?: NodeJS.ProcessEnv): Promise<{ code: number; stdout: string; stderr: string }> {
 	return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ export interface SegmentAnalysis {
 }
 
 export async function analyzeSegment(file: string, runId: string): Promise<SegmentAnalysis> {
-	const result = await run("python", [path.join(import.meta.dirname, "analyze_segment.py"), file, DIRS.frames], {
+	const result = await run(PYTHON, [path.join(import.meta.dirname, "analyze_segment.py"), file, DIRS.frames], {
 		...process.env,
 		...(PYTHON_PACKAGES ? { PYTHONPATH: PYTHON_PACKAGES } : {}),
 	});
@@ -125,15 +125,23 @@ export async function concatVlog(files: string[], out: string): Promise<void> {
 	if (result.code !== 0) throw new Error(`合成失败: ${result.stderr.slice(-500)}`);
 }
 
-const FONT = "C\\\\:/Windows/Fonts/msyh.ttc";
+export function fontPath(): string {
+	if (process.env.FONT_PATH) return process.env.FONT_PATH;
+	if (process.platform === "win32") return "C:/Windows/Fonts/msyh.ttc";
+	if (process.platform === "darwin") return "/System/Library/Fonts/PingFang.ttc";
+	return "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
+}
+
+export function filterPath(p: string): string {
+	return p.replaceAll("\\", "/").replaceAll(":", "\\\\:");
+}
+
+function drawtext(textFile: string, size: number, y: string, box = false): string {
+	return `drawtext=fontfile=${filterPath(fontPath())}:textfile=${filterPath(textFile)}:fontcolor=white:fontsize=${size}:x=(w-text_w)/2:y=${y}${box ? ":box=1:boxcolor=black@0.5:boxborderw=8" : ""}`;
+}
 const W = 640;
 const H = 360;
 const FPS = 15;
-
-function drawtext(textFile: string, size: number, y: string, box = false): string {
-	const tf = textFile.replaceAll("\\", "/").replaceAll(":", "\\\\:");
-	return `drawtext=fontfile=${FONT}:textfile=${tf}:fontcolor=white:fontsize=${size}:x=(w-text_w)/2:y=${y}${box ? ":box=1:boxcolor=black@0.5:boxborderw=8" : ""}`;
-}
 
 function wrapText(text: string, perLine: number): string {
 	const maxWidth = perLine * 2;
