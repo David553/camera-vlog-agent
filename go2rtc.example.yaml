@@ -1,0 +1,16 @@
+# 复制为 go2rtc.yaml 并改成你自己的摄像头地址/密码。
+# 所有监听只绑定 127.0.0.1：不要把摄像头 554 端口暴露到公网，不要开 DMZ。
+api:
+  listen: "127.0.0.1:1984"
+
+rtsp:
+  listen: "127.0.0.1:8554"
+
+webrtc:
+  listen: "127.0.0.1:8555"
+
+streams:
+  tplink_main:
+    - "rtsp://USER:PASSWORD@192.168.1.100:554/stream1#transport=tcp"
+  tplink_sub:
+    - "rtsp://USER:PASSWORD@192.168.1.100:554/stream2#transport=tcp"
