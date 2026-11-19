@@ -176,6 +176,27 @@ async function renderCard(text: string, seconds: number, out: string, size = 26)
 	if (result.code !== 0) throw new Error(`字幕卡渲染失败: ${result.stderr.slice(-500)}`);
 }
 
+export function pickWindow(seg: SegmentAnalysis): { start: number; end: number } {
+	const windows = seg.activeWindows ?? [];
+	let start: number;
+	let end: number;
+	if (windows.length > 0) {
+		const best = windows.reduce((a, b) => (b.end - b.start > a.end - a.start ? b : a));
+		start = best.start;
+		end = best.end;
+	} else {
+		start = Math.max(0, seg.peakTime - 2.5);
+		end = Math.min(seg.duration, seg.peakTime + 2.5);
+	}
+	if (end - start < 2.5) {
+		const mid = (start + end) / 2;
+		start = Math.max(0, mid - 1.25);
+		end = Math.min(seg.duration, start + 2.5);
+	}
+	if (end - start > 8) end = start + 8;
+	return { start, end };
+}
+
 export interface EditPiece {
 	file: string;
 	start: number;

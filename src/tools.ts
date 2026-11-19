@@ -4,7 +4,7 @@ import path from "node:path";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { bool, num, obj, opt, str } from "@earendil-works/pi-schema";
 import { DIRS } from "./config.ts";
-import { analyzeSegment, editVlog, grabLiveFrame, type EditPiece } from "./media.ts";
+import { analyzeSegment, editVlog, grabLiveFrame, pickWindow, type EditPiece } from "./media.ts";
 import { loadIndex, loadSegments, saveIndex, type ClipEntry } from "./store.ts";
 import { tagSegment } from "./tagging.ts";
 
@@ -106,23 +106,7 @@ const buildVlog: AgentTool<any> = {
 		for (const clip of clips) {
 			let seg = segments.find((s) => s.id === clip.id);
 			if (!seg || !seg.activeWindows) seg = await analyzeSegment(clip.file, "edit");
-			const windows = seg.activeWindows ?? [];
-			let start: number;
-			let end: number;
-			if (windows.length > 0) {
-				const best = windows.reduce((a, b) => (b.end - b.start > a.end - a.start ? b : a));
-				start = best.start;
-				end = best.end;
-			} else {
-				start = Math.max(0, seg.peakTime - 2.5);
-				end = Math.min(seg.duration, seg.peakTime + 2.5);
-			}
-			if (end - start < 2.5) {
-				const mid = (start + end) / 2;
-				start = Math.max(0, mid - 1.25);
-				end = Math.min(seg.duration, start + 2.5);
-			}
-			if (end - start > 8) end = start + 8;
+			const { start, end } = pickWindow(seg);
 			pieces.push({
 				file: clip.file,
 				start,

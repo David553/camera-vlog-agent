@@ -80,6 +80,16 @@ node --env-file=.env src/main.ts --edit-only
 2. **语义层（云端视觉模型，工具内一次性调用）**：关键帧 → 严格 JSON 标签+描述。
 3. **编排层（pi-agent 循环，文本大脑）**：按 system prompt 决定工具调用顺序，可用 `tag` / `max_clips` 参数选片。
 
+## 评测（evals/）
+
+SOTA 靠度量不靠口号。`npm run eval` 对 `evals/dataset.json` 逐条计算：
+
+- **tag F1**：视觉标签 vs 人工标注（固定 taxonomy）
+- **window IoU**：高光选取窗口 vs 人工认定区间
+
+报告写 `evals/report.json`（不入库）。视觉调用走帧缓存，重复 eval 零上传。
+bootstrap v0 为开发者逐帧确认的家庭片段；扩充直接加 entries，后续接 TVSum / SumMe 适配器。
+
 ## 隐私与安全
 
 - go2rtc 全部监听 `127.0.0.1`。**不要把摄像头 554 端口暴露到公网，不要开 DMZ。**

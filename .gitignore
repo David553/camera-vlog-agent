@@ -9,3 +9,4 @@ logs/
 segments.json
 index.json
 tools/
+evals/report.json

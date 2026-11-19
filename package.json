@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --env-file=.env src/main.ts",
     "check-api": "node --env-file=.env src/check-api.ts",
-    "test": "node --test src/gateway.test.ts src/media.test.ts"
+    "test": "node --test src/gateway.test.ts src/media.test.ts src/metrics.test.ts",
+    "eval": "node --env-file=.env src/eval.ts"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "1.5.2",
